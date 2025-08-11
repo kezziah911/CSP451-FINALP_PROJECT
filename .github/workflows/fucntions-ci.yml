@@ -1,0 +1,44 @@
+name: Azure Functions CI
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "Azure-functions/**"
+      - ".github/workflows/functions-ci.yml"
+  pull_request:
+    branches: [ "**" ]
+    paths:
+      - "Azure-functions/**"
+
+jobs:
+  node-ci:
+    name: Node install / lint / tests (no deploy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: |
+            Azure-functions/package-lock.json
+            Azure-functions/**/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Azure-functions
+        run: npm ci
+
+      # These run only if your package.json has them (safe no-op otherwise)
+      - name: Lint (optional)
+        working-directory: Azure-functions
+        run: npm run lint --if-present
+
+      - name: Unit tests (optional)
+        working-directory: Azure-functions
+        run: npm test --if-present
