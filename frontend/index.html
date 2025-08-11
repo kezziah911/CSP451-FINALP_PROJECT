@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Robby • FieldOps Console</title>
+<style>
+  :root{
+    --bg:#f5f7f4;
+    --card:#ffffff;
+    --ink:#0f1b1b;         /* deep pine */
+    --muted:#5b6b63;
+    --brand:#1f5a36;       /* forest green */
+    --brand-2:#914d2a;     /* rust/barn */
+    --accent:#1f2b3a;      /* navy */
+    --ok:#216a3b; --bad:#a11c1c;
+    --line:#e6ede3;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;
+    color:var(--ink); background:var(--bg);
+    /* subtle ranch/farm texture */
+    background-image:
+      linear-gradient(90deg, rgba(31,43,58,.03) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(31,43,58,.02) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .wrap{max-width:980px; margin:42px auto; padding:0 22px}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line); border-radius:18px;
+    box-shadow:0 10px 30px rgba(15,27,27,.06);
+    overflow:hidden;
+  }
+  header{
+    padding:26px 26px 16px; position:relative;
+    background:
+      radial-gradient(1200px 220px at -20% 0%, #eaf3ec, transparent 50%),
+      radial-gradient(900px 220px at 120% 0%, #e8eef5, transparent 55%),
+      linear-gradient(180deg,#ffffff, #fafdf9);
+    border-bottom:1px solid var(--line);
+  }
+  .toprow{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+  .brand-tag{
+    font-size:12px; letter-spacing:.3px; text-transform:uppercase;
+    color:#fff; background:var(--accent);
+    padding:4px 10px; border-radius:999px; font-weight:700;
+  }
+  h1{margin:0; font-size:28px; font-weight:900; color:var(--brand)}
+  .hint{color:var(--muted); font-size:12px; margin-top:6px}
+
+  .content{padding:22px 22px 26px}
+  .grid{display:grid; gap:14px}
+  @media(min-width:780px){ .grid.cols-2{ grid-template-columns:1fr 1fr } }
+
+  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
+  input[type=text], input[type=number]{
+    width:100%; padding:11px 12px; border-radius:12px;
+    border:1px solid #d9e1d7; background:#fbfdfb; outline:none;
+  }
+  input:focus{border-color:var(--brand)}
+
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+  .btn{
+    border:0; border-radius:12px; padding:10px 14px; font-weight:700;
+    cursor:pointer; transition:.15s transform, .15s filter;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--brand); color:#fff}
+  .btn-ghost{background:#f4f7f2; color:#1f2b1f; border:1px solid var(--line)}
+  .btn-rust{background:var(--brand-2); color:#fff}
+
+  .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px dashed #ced8cc; color:#2b3a2b; background:#f8fbf6;
+    padding:6px 10px; border-radius:10px; font-size:12px;
+  }
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+
+  .status{margin-top:16px; border-radius:12px; padding:12px 14px; font-weight:700}
+  .ok{background:#e9f6ed; color:var(--ok)}
+  .bad{background:#fdebec; color:var(--bad)}
+
+  footer{padding:12px 22px; border-top:1px solid var(--line); background:#fafdf9; font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <header>
+      <div class="toprow">
+        <span class="brand-tag">Robby • FieldOps</span>
+        <h1>Update Stock & Product</h1>
+      </div>
+      <div class="hint">Autodetects your VM IP (ports 5001 / 5002). You can override the URLs or API key below.</div>
+    </header>
+
+    <div class="content">
+      <div class="grid cols-2">
+        <div>
+          <label for="pid">Product ID</label>
+          <input id="pid" type="text" value="sku-123" />
+        </div>
+        <div>
+          <label for="qty">Quantity</label>
+          <input id="qty" type="number" value="7" />
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="pname">Product Name</label>
+        <input id="pname" type="text" value="Ranch Work Boots" />
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btnUpdate">Update Both</button>
+        <button class="btn btn-ghost" id="btnHealth">Check API Health</button>
+        <button class="btn btn-rust" id="btnReset">Reset</button>
+      </div>
+
+      <div class="meta">
+        <span class="pill">Inventory API: <span id="invBase" class="mono"></span></span>
+        <span class="pill">Product API: <span id="prodBase" class="mono"></span></span>
+        <span class="pill">Correlation: <span id="cid" class="mono"></span></span>
+        <span class="pill">API key:
+          <input id="apiKey" type="text" value="dev-key-123"
+                 style="border:0;background:transparent;width:120px" />
+        </span>
+      </div>
+
+      <div id="banner" class="status" style="display:none"></div>
+    </div>
+
+    <footer>
+      Tip: set <span class="mono">window.API_URL_INVENTORY</span> /
+      <span class="mono">window.API_URL_PRODUCT</span> before this file loads to override autodetected URLs.
+    </footer>
+  </div>
+</div>
+
+<script>
+  // base URLs (overrideable via global)
+  const host = location.hostname || '127.0.0.1';
+  const INV_BASE  = (window.API_URL_INVENTORY || `http://${host}:5001`);
+  const PROD_BASE = (window.API_URL_PRODUCT   || `http://${host}:5002`);
+  document.getElementById('invBase').textContent  = INV_BASE;
+  document.getElementById('prodBase').textContent = PROD_BASE;
+
+  // correlation id
+  function newCid(){ return `cid-${Math.random().toString(36).slice(2,7)}${Date.now().toString().slice(-3)}`; }
+  const cidEl = document.getElementById('cid');
+  function setCid(){ cidEl.textContent = newCid(); }
+  setCid();
+
+  const banner = document.getElementById('banner');
+  function show(msg, ok=true){
+    banner.textContent = msg;
+    banner.className = `status ${ok? 'ok':'bad'}`;
+    banner.style.display = 'block';
+  }
+
+  async function checkHealth(){
+    const headers = { 'x-api-key': document.getElementById('apiKey').value || '' };
+    try{
+      const [a,b] = await Promise.all([
+        fetch(`${INV_BASE}/health`, { headers }),
+        fetch(`${PROD_BASE}/health`)
+      ]);
+      const ai = await a.json().catch(()=>({ok:false}));
+      const bi = await b.json().catch(()=>({ok:false}));
+      const ok = (a.ok && ai.ok) && (b.ok && bi.ok);
+      show(ok ? 'Inventory ✅ + Product ✅'
+              : `Some calls failed → inventory ${a.ok&&ai.ok?'✅':'❌'} • product ${b.ok&&bi.ok?'✅':'❌'}`, ok);
+    }catch{ show('Health check failed.', false); }
+  }
+
+  async function updateBoth(){
+    const productId = document.getElementById('pid').value.trim();
+    const qty       = parseInt(document.getElementById('qty').value,10);
+    const name      = document.getElementById('pname').value.trim();
+    const apiKey    = document.getElementById('apiKey').value.trim();
+    const correlationId = cidEl.textContent;
+
+    if(!productId || Number.isNaN(qty)){ show('Provide product id & quantity.', false); return; }
+
+    try{
+      const inv = fetch(`${INV_BASE}/update-stock`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'x-api-key': apiKey },
+        body:JSON.stringify({ productId, qty, correlationId })
+      });
+
+      const prod = fetch(`${PROD_BASE}/products/upsert`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body:JSON.stringify({ productId, name })
+      });
+
+      const [r1, r2] = await Promise.all([inv, prod]);
+      const ok = r1.ok && r2.ok;
+      show(ok ? '✅ Updated stock & product' : '❌ Update failed', ok);
+      if(ok) setCid();
+    }catch{ show('❌ Network error while updating.', false); }
+  }
+
+  document.getElementById('btnHealth').addEventListener('click', checkHealth);
+  document.getElementById('btnUpdate').addEventListener('click', updateBoth);
+  document.getElementById('btnReset').addEventListener('click', () => {
+    document.getElementById('pid').value   = 'sku-123';
+    document.getElementById('qty').value   = 7;
+    document.getElementById('pname').value = 'Ranch Work Boots';
+    setCid(); banner.style.display = 'none';
+  });
+
+  // initial probe
+  setTimeout(checkHealth, 300);
+</script>
+</body>
+</html>
+
