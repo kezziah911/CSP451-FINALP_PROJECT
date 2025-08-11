@@ -41,13 +41,6 @@ jobs:
       - name: Validate docker-compose syntax
         run: docker compose -f docker-compose.yml config
 
-# .github/workflows/ci.yml
-jobs:
-  compose-validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
       # Ensure validation never reads a stray root .env
       - name: Create empty CI env file
         run: printf "" > .env.ci
