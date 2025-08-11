@@ -147,9 +147,9 @@ Add repo secrets:
   * HTTPS for Functions endpoint
   * (Optional) Key Vault: recommended to store API_KEY and connection strings; Functions or services can access with Managed Identity
 
-# Sreenshots
+# Sreenshots/Evidence
 Included in ./screenshots/:
-  * Docker-.png - running containers
+  * Docker ps .png - running containers
   * frontendip.png - web form via :8080
   * curl test.png - authorized request to /update
   * queue message.png - message sample (or Storage Explorer)
@@ -157,6 +157,9 @@ Included in ./screenshots/:
   * timertriggertest.png and timertriggerlogs.png - timer trigger logs and runs
   * httptriggertest.png - httptrigger runs sending message to queue
   * alerts.png alert rules
+  * Dashboard.png - show the metrics of target resource
+  * Key Vault.png
+    
 
 # Troubleshooting
   * 401 Unauthorized calling inventory:
